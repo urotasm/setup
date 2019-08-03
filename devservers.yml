@@ -1,0 +1,5 @@
+- hosts: devservers
+  become: yes
+  roles:
+  - common
+  - dev

@@ -1,0 +1,17 @@
+- name: Install common packages
+  dnf:
+    name:
+    - bash-completion
+    - curl
+    - wget
+    state: latest
+  when: "ansible_pkg_mgr == 'dnf'"
+
+- name: Install common packages
+  yum:
+    name:
+    - bash-completion
+    - curl
+    - wget
+    state: latest
+  when: "ansible_pkg_mgr == 'yum'"

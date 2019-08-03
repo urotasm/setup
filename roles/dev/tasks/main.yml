@@ -1,0 +1,105 @@
+- name: Install dev related packages
+  dnf:
+    name:
+    - emacs
+    - git
+    state: latest
+  when: "ansible_pkg_mgr == 'dnf'"
+
+- name: Install dev related packages
+  yum:
+    name:
+    - emacs
+    - git
+    state: latest
+  when: "ansible_pkg_mgr == 'yum'"
+
+- name: Create emacs config dir
+  become: no
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+  - /home/{{ ansible_env.SUDO_USER }}/.emacs.d
+  - /home/{{ ansible_env.SUDO_USER }}/.emacs.d/elisp
+
+- name: Download elisp for yaml mode
+  become: no
+  get_url:
+    url: https://raw.githubusercontent.com/yoshiki/yaml-mode/master/yaml-mode.el
+    dest: /home/{{ ansible_env.SUDO_USER }}/.emacs.d/elisp/
+
+- name: Copy emacs config file
+  become: no
+  copy:
+    src: ../files/init.el
+    dest: /home/{{ ansible_env.SUDO_USER }}/.emacs.d/
+    mode: 0644
+
+- name: Install necessary pacakges for pyenv
+  dnf:
+    name:
+    - gcc
+    - make
+    - zlib-devel
+    - bzip2
+    - bzip2-devel
+    - readline-devel
+    - sqlite
+    - sqlite-devel
+    - openssl-devel
+    - xz
+    - xz-devel
+    - libffi-devel
+    - findutils
+    state: latest
+  when: "ansible_pkg_mgr == 'dnf'"
+
+- name: Install necessary pacakges for pyenv
+  yum:
+    name:
+    - gcc
+    - make
+    - zlib-devel
+    - bzip2
+    - bzip2-devel
+    - readline-devel
+    - sqlite
+    - sqlite-devel
+    - openssl-devel
+    - xz
+    - xz-devel
+    - libffi-devel
+    - findutils
+    state: latest
+  when: "ansible_pkg_mgr == 'yum'"
+
+- name: Download pyenv-installer
+  become: no
+  get_url:
+    url: https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer
+    dest: /tmp/pyenv-installer
+
+- name: Check whether pyenv is installed
+  become: no
+  stat:
+    path: /home/{{ ansible_env.SUDO_USER }}/.pyenv
+  register: pyenv_dir
+
+- name: Install pyenv
+  become: no
+  shell: bash < /tmp/pyenv-installer
+  when: not pyenv_dir.stat.exists
+
+- name: Download git-prompt.sh
+  become: no
+  get_url:
+    url: https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+    dest: /home/{{ ansible_env.SUDO_USER }}/.git-prompt.sh
+
+- name: Copy bash config file
+  become: no
+  template:
+    src: ../templates/.bashrc
+    dest: /home/{{ ansible_env.SUDO_USER }}/.bashrc
+    mode: 0644
